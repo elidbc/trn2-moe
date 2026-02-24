@@ -1,0 +1,7 @@
+# Keys
+*.key
+*.pem
+
+# NKI Files
+*.ntff
+*.neff

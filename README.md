@@ -1,0 +1,1 @@
+CS217 Final Project. Profiling MoE layer kernels on AWS's Trainium2 accelerator. 
