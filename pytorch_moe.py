@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# https://github.com/huggingface/transformers/blob/main/src/transformers/models/mixtral/modeling_mixtral.py
+
 class MixtralBlockSparseTop2MLP(nn.Module):
     """An individual Expert MLP using SwiGLU activation."""
     def __init__(self, config):
