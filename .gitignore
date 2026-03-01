@@ -5,3 +5,6 @@
 # NKI Files
 *.ntff
 *.neff
+
+# venv
+.venv
