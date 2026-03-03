@@ -2,6 +2,7 @@ import neuronxcc.nki as nki
 import neuronxcc.nki.language as nl
 import neuronxcc.nki.isa as nisa
 
+
 @nki.jit
 def matrix_vector_mul_kernel(matT, vec2d):
     """
