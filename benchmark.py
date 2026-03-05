@@ -109,8 +109,8 @@ def run_gemm(args):
 def run_naive_moe_kernel(args):
     """Run and benchmark the naive MoE routing kernel."""
     # these are arbitrary
-    batch_size = 64
-    sequence_length = 64
+    batch_size = 16
+    sequence_length = 16
     T = batch_size * sequence_length
 
     # these are from the Mixtral 8x7B model
@@ -133,16 +133,16 @@ def run_naive_moe_kernel(args):
 
     device = xm.xla_device()
     inputs_T = torch.from_numpy(inputs_T).to(device)
-    routing_weights = torch.from_numpy(routing_weights).to(device)
+    routing_weights_kernel = torch.from_numpy(routing_weights).to(device)
 
     # Run routing kernel (tiled matmul + softmax on device)
     if args.simulate:
-        probs_xla = nki.simulate_kernel(routing_kernel, inputs_T, routing_weights)
+        probs_xla = nki.simulate_kernel(routing_kernel, inputs_T, routing_weights_kernel)
     else:
-        probs_xla = routing_kernel(inputs_T, routing_weights)
+        probs_xla = routing_kernel(inputs_T, routing_weights_kernel)
         xm.mark_step()
         #probs = baremetal(routing_kernel)(inputs_T, routing_weights)
-    probs = probs.cpu().numpy() if not args.simulate else np.array(probs) #np.array(probs)
+    probs = probs_xla.cpu().numpy() if not args.simulate else np.array(probs_xla) #np.array(probs)
 
     # Top-k selection on host
     top_k_indices = np.argsort(-probs, axis=1)[:, :top_k]
@@ -186,22 +186,32 @@ def run_naive_moe_kernel(args):
     expert_w_down_2d = expert_w_down.reshape(-1, feature_dim)
 
     # Kernel expects float32 indices for SBUF arithmetic
-    top_k_indices_i = top_k_indices.astype(np.int32)
+    top_k_indices_f = top_k_indices.astype(np.float32)
     top_k_values_f = top_k_values.astype(np.float32)
+
+    # Move expert-stage inputs to device (mirror routing stage)
+    inputs_flat_t = torch.from_numpy(inputs_flat).to(device)
+    expert_w_gate_2d_t = torch.from_numpy(expert_w_gate_2d).to(device)
+    expert_w_up_2d_t = torch.from_numpy(expert_w_up_2d).to(device)
+    expert_w_down_2d_t = torch.from_numpy(expert_w_down_2d).to(device)
+    top_k_indices_t = torch.from_numpy(top_k_indices_f).to(device)
+    top_k_values_t = torch.from_numpy(top_k_values_f).to(device)
 
     print(f"\nExpert compute: expert_dim={expert_dim}")
 
     if args.simulate:
-        expert_outputs = nki.simulate_kernel(
-            moe_kernel, inputs_flat,
-            expert_w_gate_2d, expert_w_up_2d, expert_w_down_2d,
-            top_k_indices_i, top_k_values_f)
+        expert_outputs_xla = nki.simulate_kernel(
+            moe_kernel,
+            inputs_flat_t,
+            expert_w_gate_2d_t, expert_w_up_2d_t, expert_w_down_2d_t,
+            top_k_indices_t, top_k_values_t)
     else:
-        expert_outputs = baremetal(moe_kernel)(
-            inputs_flat,
-            expert_w_gate_2d, expert_w_up_2d, expert_w_down_2d,
-            top_k_indices_i, top_k_values_f)
-    expert_outputs = np.array(expert_outputs)
+        expert_outputs_xla = moe_kernel(
+            inputs_flat_t,
+            expert_w_gate_2d_t, expert_w_up_2d_t, expert_w_down_2d_t,
+            top_k_indices_t, top_k_values_t)
+        xm.mark_step()
+    expert_outputs = expert_outputs_xla.cpu().numpy() if not args.simulate else np.array(expert_outputs_xla)
 
     if args.check:
         print("Running expert-compute correctness check against NumPy …")
