@@ -69,8 +69,7 @@ def routing_kernel(inputs_T, routing_weights):
         nisa.reciprocal(dst=sum_exp_reciprocal, data=sum_exp)
         nisa.tensor_scalar(dst=probs, data=exp_vals, op0=nl.multiply, operand0=sum_exp_reciprocal)
 
-        nisa.dma_copy(dst=probs_out[m * TILE_M:(m + 1) * TILE_M,
-                                    0:num_experts], src=probs)
+        nisa.dma_copy(dst=probs_out[m * TILE_M:(m + 1) * TILE_M, 0:num_experts], src=probs)
        
     return probs_out
 
@@ -184,17 +183,6 @@ def moe_kernel(inputs, expert_w_gate, expert_w_up, expert_w_down,
                         indirect_dim=0
                     ))
 
-                    """w_g = nl.load(expert_w_gate.ap(
-                        pattern=[[expert_dim, TILE_K], [1, TILE_N]],
-                        offset=n * TILE_N,
-                        scalar_offset=row_off_reg,
-                        indirect_dim=0))
-                    w_u = nl.load(expert_w_up.ap(
-                        pattern=[[expert_dim, TILE_K], [1, TILE_N]],
-                        offset=n * TILE_N,
-                        scalar_offset=row_off_reg,
-                        indirect_dim=0))"""
-
                     gate_partial = nl.ndarray((1, TILE_N), dtype=nl.float32,
                                               buffer=nl.psum)
                     up_partial = nl.ndarray((1, TILE_N), dtype=nl.float32,
@@ -232,13 +220,8 @@ def moe_kernel(inputs, expert_w_gate, expert_w_up, expert_w_down,
                 nisa.tensor_tensor(dst=silu, data1=gate_acc,
                                    data2=inv_denom, op=nl.multiply)
 
-                #inter_tile = nl.ndarray((1, TILE_N), dtype=nl.float32,
-                #                        buffer=nl.sbuf)
-
                 nisa.tensor_tensor(dst=intermediate[:, nl.ds(n * TILE_N, TILE_N)], data1=silu,
                                    data2=up_acc, op=nl.multiply)
-
-                #intermediate[:, nl.ds(n * TILE_N, TILE_N)] = inter_tile
 
             # --- Down projection ---
             down_result = nl.ndarray((1, feature_dim), dtype=nl.float32,
@@ -271,11 +254,6 @@ def moe_kernel(inputs, expert_w_gate, expert_w_up, expert_w_down,
                         scalar_offset=row_off_d_reg,
                         indirect_dim=0
                     ))
-                    """w_d = nl.load(expert_w_down.ap(
-                        pattern=[[feature_dim, TILE_K], [1, TILE_N]],
-                        offset=n_d * TILE_N,
-                        scalar_offset=row_off_d_reg,
-                        indirect_dim=0))"""
 
                     down_partial = nl.ndarray((1, TILE_N), dtype=nl.float32,
                                               buffer=nl.psum)
@@ -300,166 +278,119 @@ def moe_kernel(inputs, expert_w_gate, expert_w_up, expert_w_down,
     return output
 
 
+@nki.jit       
+def moe_expert_kernel(sorted_tokens, w1_experts, w3_experts, w2_experts
+                        routing_weights, expert_offsets, output_tokens):
+    feature_dim, T = sorted_tokens.shape
+    _, expert_dim = w1_experts.shape
+    T_, feature_dim_ = output_tokens.shape
 
-@nki.jit
-def old_moe_kernel(inputs, expert_w_gate, expert_w_up, expert_w_down,
-               top_k_indices, top_k_values):
-    """
-    Naive MoE expert computation — single-token sequential baseline.
+    assert feature_dim == feature_dim_, f"Feature dim mismatch {feature_dim} vs {feature_dim_}"
+    
+    # NKI GEMM: LHS^T * RHS
+    TILE_M = nl.tile_size.gemm_stationary_fmax # stationary dim, (T), tile size = 128
+    TILE_K = nl.tile_size.pmax # partition dim, contraction dim (feature_dim), tile size = 128
+    TILE_N = nl.tile_size.gemm_moving_fmax # moving dim, (expert/intermediate_dim), tile size = 512
 
-    Iterates over every token individually. For each token, looks up
-    the top-k expert indices, runs the SwiGLU MLP (gate/up/down) for
-    each selected expert, and accumulates the weighted results.
+    num_k_tiles = feature_dim // TILE_K
+    num_n_tiles = expert_dim // TILE_N
 
-    Weight tensors are passed pre-flattened (expert dim folded into rows)
-    so that nl.ds can dynamically select the correct expert at runtime.
+    #output = nl.ndarray((T, feature_dim), dtype=sorted_tokens.dtype, buffer=nl.shared_hbm)
+    
+    for expert in nl.affine_range(num_experts):
+        tok_start = expert_offsets[expert]
+        tok_end = expert_offsets[expert + 1]
+        T_e = tok_end - tok_start
 
-    Args:
-        inputs:         (T, feature_dim) flattened token embeddings
-        expert_w_gate:  (num_experts * feature_dim, expert_dim) gate proj
-        expert_w_up:    (num_experts * feature_dim, expert_dim) up proj
-        expert_w_down:  (num_experts * expert_dim, feature_dim) down proj
-        top_k_indices:  (T, top_k) selected expert indices as float32
-        top_k_values:   (T, top_k) routing weights
+        expert_offset = expert * feature_dim
 
-    Returns:
-        output: (T, feature_dim)
-    """
-    T, feature_dim = inputs.shape
-    _, expert_dim = expert_w_gate.shape
-    _, top_k = top_k_indices.shape
+        inputs_e_T = nl.ndarray((feature_dim, T_e), dtype=sorted_tokens.dtype, buffer=nl.sbuf)
+        nisa.dma_copy(dst=inputs_e_T, src=sorted_tokens[:, tok_start : tok_end])
 
-    TILE_K = nl.tile_size.pmax              # 128
-    TILE_N = nl.tile_size.gemm_moving_fmax  # 512
+        intermediate = nl.ndarray((T_e, expert_dim), dtype=inputs_e_T, buffer=nl.sbuf)
 
-    num_k_feat = feature_dim // TILE_K # 
-    num_n_expert = expert_dim // TILE_N # output dim for up/gate
-    num_k_expert = expert_dim // TILE_K
-    num_n_feat = feature_dim // TILE_N # output dim for down
+        num_m_tiles = T_e // TILE_M
+        for m in nl.affine_range(num_m_tiles):
+            for n in nl.affine_range(num_n_tiles):
+                gate_acc = nl.zeros((TILE_M, TILE_N), dtype=nl.inputs_e_T.dtype, buffer=nl.sbuf, name=f"gate_accum{n}")
+                up_acc = nl.zeros((TILE_M, TILE_N), dtype=nl.inputs_e_T.dtype, buffer=nl.sbuf, name=f"up_accum{n}")
 
-    output = nl.ndarray((T, feature_dim), dtype=nl.float32,
-                        buffer=nl.shared_hbm)
+                for k in nl.affine_range(num_k_tiles):
+                    lhsT_tile = nl.ndarray((TILE_K, TILE_M), dtype=inputs_e_T.dtype, buffer=nl.sbuf)
+                    rhs_tile = nl.ndarray((TILE_K, TILE_N), dtype=w1_experts.dtype, buffer=nl.sbuf)
 
-    for t in nl.sequential_range(T):
-        # --- Pre-load token and transpose to column vectors ---
-        # Each column k of x_t holds inputs[t, k*128:(k+1)*128] transposed
-        # to (TILE_K, 1) so it can serve as nc_matmul stationary operand.
-        # x_t = single token, tiled
-        x_t = nl.ndarray((nl.par_dim(TILE_K), num_k_feat),
-                         dtype=nl.float32, buffer=nl.sbuf)
-        for k_ld in nl.affine_range(num_k_feat):
-            x_row = nl.load(
-                inputs[t:t+1, k_ld * TILE_K:(k_ld + 1) * TILE_K])
-            x_col_psum = nisa.nc_transpose(x_row)
-            x_t[:, k_ld:k_ld+1] = nisa.tensor_copy(
-                x_col_psum, dtype=nl.float32)
-            # x_t shape = 128, 32. feature vector for a token in 
-        out_token = nl.zeros((1, feature_dim), dtype=nl.float32,
-                             buffer=nl.sbuf)
+                    # gate GEMM
+                    nisa.dma_copy(dst=lhsT_tile, src=inputs_e_T[
+                        k * TILE_K : (k + 1) * TILE_K,
+                        m * TILE_M : (m + 1) * TILE_M
+                    ])
 
-        for k_top in nl.static_range(top_k):
-            #expert_idx = nl.ndarray((1, 1), dtype=nl.int32, buffer=nl.sbuf)
-            #nisa.dma_copy(dst=expert_idx, src=top_k_indices[t:t+1, k_top:k_top+1])
-            expert_idx = nl.load(
-                top_k_indices[t:t+1, k_top:k_top+1])
-            weight = nl.load(
-                top_k_values[t:t+1, k_top:k_top+1])
+                    nisa.dma_copy(dst=rhs_tile, src=w1_experts[
+                        expert_offset + (k * TILE_K) : expert_offset + ((k + 1) * TILE_K),
+                        n * TILE_N : (n + 1) * TILE_N
+                    ])
 
-            # Row offsets into the flattened 2-D weight tensors
-            gate_up_base = nl.multiply(expert_idx, feature_dim)
-            down_base = nl.multiply(expert_idx, expert_dim)
+                    gate_psum = nl.ndarray((TILE_M, TILE_N), dtype=nl.float32, buffer=nl.psum, name=f"gate_psum{k}")
 
-            # Tiled GEMM operations for gate and up projection, fused with SiLU
-            intermediate = nl.ndarray((1, expert_dim),
-                                      dtype=nl.float32, buffer=nl.sbuf)
-            for n in nl.affine_range(num_n_expert):
-                gate_psum = nl.zeros((1, TILE_N), dtype=nl.float32,
-                                     buffer=nl.psum)
-                up_psum = nl.zeros((1, TILE_N), dtype=nl.float32,
-                                   buffer=nl.psum)
+                    nisa.nc_matmul(gate_psum, lhsT_tile, rhs_tile)
+                    nisa.tensor_tensor(dst=gate_acc, data1=gate_psum, data2=gate_acc, op=nl.add)
+                        
+                    # up GEMM
+                    nisa.dma_copy(dst=lhsT_tile, src=inputs_e_T[
+                        k * TILE_K : (k + 1) * TILE_K,
+                        m * TILE_M : (m + 1) * TILE_M
+                    ])
 
-                for k in nl.affine_range(num_k_feat):
-                    x_k = x_t[:, k:k+1]                       # (128, 1)
-                    row_off = gate_up_base + k * TILE_K
+                    nisa.dma_copy(dst=rhs_tile, src=w3_experts[
+                        expert_offset + (k * TILE_K) : expert_offset + ((k + 1) * TILE_K),
+                        n * TILE_N : (n + 1) * TILE_N
+                    ])
 
-                    row_off_reg = nisa.register_alloc()
-                    nisa.register_load(row_off_reg, row_off)
+                    up_psum = nl.ndarray((TILE_M, TILE_N), dtype=nl.float32, buffer=nl.psum, name=f"up_psum{k}")
+    
+                    nisa.nc_matmul(up_psum, lhsT_tile, rhs_tile)
+                    nisa.tensor_tensor(dst=up_acc, data1=up_psum, data2=up_acc, op=nl.add)
 
-                    w_g = nl.load(expert_w_gate.ap(
-                        pattern=[[expert_dim, TILE_K], [1, TILE_N]],
-                        offset=n * TILE_N,
-                        scalar_offset=row_off_reg,
-                        indirect_dim=0
-                    ))
-                    w_u = nl.load(expert_w_up.ap(
-                        pattern=[[expert_dim, TILE_K], [1, TILE_N]],
-                        offset=n * TILE_N,
-                        scalar_offset=row_off_reg,
-                        indirect_dim=0
-                    ))
+                # SiLU (gate + up)
+                nisa.tensor_tensor(dst=up_acc, data1=up_acc, data2=gate_acc, op=nl.multiply)
+                out_tile = nl.ndarray((TILE_M, TILE_N), dtype=gate_acc.dtype, buffer=nl.sbuf)
+                nisa.activation(dst=out_tile, op=nl.sigmoid, data=up_acc)
+                nisa.tensor_tensor(dst=out_tile, data1=out_tile, data2=up_acc, op=nl.add)
+                nisa.dma_copy(dst=intermediate[
+                    m * TILE_M : (m + 1) * TILE_M, 
+                    n * TILE_N : (n + 1) * TILE_N
+                ], src=out_tile)
+            
+        # Down portion
+        #num_md_tiles = expert_dim // TILE_M
+        num_nd_tiles = feature_dim // TILE_N
+        num_kd_tiles = expert_dim // TILE_K
+        for m in nl.affine_range(num_m_tiles):
+            for n in nl.affine_range(num_nd_tiles):
+                out_acc = nl.ndarray(TILE_M, TILE_N, dtype=intermediate.dtype, buffer=nl.sbuf)
+                out_psum = nl.ndarray(TILE_M, TILE_N, dtype=intermediate.dtype, buffer=nl.psum)
 
-                    """w_g = nl.load(expert_w_gate[
-                        nl.ds(row_off[0, 0], TILE_K),
-                        n * TILE_N:(n + 1) * TILE_N])
-                    w_u = nl.load(expert_w_up[
-                        nl.ds(row_off[0, 0], TILE_K),
-                        n * TILE_N:(n + 1) * TILE_N])"""
+                for k in nl.affine_range(num_kd_tiles):
+                    lhsT_tile = nl.ndarray((TILE_K, TILE_M), dtype=intermediate.dtype, buffer=nl.sbuf)
+                    rhs_tile = nl.ndarray((TILE_K, TILE_N), dtype=w2_experts.dtype, buffer=nl.sbuf)
 
-                    gate_psum += nisa.nc_matmul(x_k, w_g)
-                    up_psum += nisa.nc_matmul(x_k, w_u)
+                    # gate GEMM
+                    nisa.dma_copy(dst=lhsT_tile, src=intermediate[
+                        k * TILE_K : (k + 1) * TILE_K,
+                        m * TILE_M : (m + 1) * TILE_M
+                    ])
 
-                gate_s = nisa.tensor_copy(gate_psum, dtype=nl.float32)
-                up_s = nisa.tensor_copy(up_psum, dtype=nl.float32)
+                    nisa.dma_copy(dst=rhs_tile, src=w2_experts[
+                        expert_offset + (k * TILE_K) : expert_offset + ((k + 1) * TILE_K),
+                        n * TILE_N : (n + 1) * TILE_N
+                    ])
 
-                # SiLU(x) = x / (1 + exp(-x))
-                neg_gate = nl.subtract(0.0, gate_s)
-                silu = nl.divide(gate_s,
-                                 nl.add(nl.exp(neg_gate), 1.0))
-                inter_tile = nl.multiply(silu, up_s)
+                    nisa.nc_matmul(out_psum, lhsT_tile, rhs_tile)
+                    nisa.tensor_tensor(dst=out_acc, data1=out_psum, data2=out_acc, op=nl.add)
 
-                intermediate[:, nl.ds(n * TILE_N, TILE_N)] = inter_tile
+                nisa.dma_copy(src=out_acc, dst=output_tokens[
+                    tok_start + m * TILE_M : tok_start + (m + 1) * TILE_M,
+                    n * TILE_N : (n + 1) * TILE_N
+                ])
 
-            # ---- Down projection ----
-            down_result = nl.ndarray((1, feature_dim),
-                                     dtype=nl.float32, buffer=nl.sbuf)
-
-            for n_d in nl.affine_range(num_n_feat):
-                down_psum = nl.zeros((1, TILE_N), dtype=nl.float32,
-                                     buffer=nl.psum)
-
-                for k_d in nl.affine_range(num_k_expert):
-                    # Transpose intermediate chunk for contraction
-                    inter_slice = intermediate[
-                        :, nl.ds(k_d * TILE_K, TILE_K)]       # (1, 128)
-                    inter_t_psum = nisa.nc_transpose(inter_slice)
-                    inter_t = nisa.tensor_copy(
-                        inter_t_psum, dtype=nl.float32)        # (128, 1)
-
-                    row_off_d = down_base + k_d * TILE_K
-                    row_off_d_reg = nisa.register_alloc()
-                    nisa.register_load(row_off_d_reg, row_off_d)
-                    
-                    w_d = nl.load(expert_w_down.ap(
-                        pattern=[[feature_dim, TILE_K], [1, TILE_N]],
-                        offset=n_d * TILE_N,
-                        scalar_offset=row_off_d_reg,
-                        indirect_dim=0
-                    ))
-                    """
-                    w_d = nl.load(expert_w_down[
-                        nl.ds(row_off_d[0, 0], TILE_K),
-                        n_d * TILE_N:(n_d + 1) * TILE_N])"""
-
-                    down_psum += nisa.nc_matmul(inter_t, w_d)
-
-                down_tile = nisa.tensor_copy(
-                    down_psum, dtype=nl.float32)
-                down_result[
-                    :, nl.ds(n_d * TILE_N, TILE_N)] = down_tile
-
-            weighted = nl.multiply(down_result, weight)
-            out_token = nl.add(out_token, weighted)
-
-        nl.store(dst=output[t:t+1, 0:feature_dim], value=out_token)
-
-    return output
+    return 

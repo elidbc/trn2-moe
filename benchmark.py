@@ -127,7 +127,7 @@ def run_naive_moe_kernel(args):
     routing_weights = np.random.normal(loc=0, scale=1, size=(feature_dim, num_experts)).astype(np.float32)
     #routing_weights = np.random.rand(feature_dim, num_experts).astype(np.float32)
 
-    # Flatten to (T, feature_dim) then transpose so contraction dim is on P-axis
+    # Flatten to (T, feature_dim) then transpose
     inputs_flat = inputs.reshape(T, feature_dim)
     inputs_T = np.ascontiguousarray(inputs_flat.T)  # (feature_dim, T)
 
