@@ -28,6 +28,8 @@ def create_inputs(input_tensor):
     # get router outputs (of size batch_size * sequence_length x top_k)
     with torch.no_grad():
         routing_weights, selected_experts = moe_block.router(input_tensor)
+    print(f"routing_weights shape: {routing_weights.shape}")
+    print(f"selected_experts shape: {selected_experts.shape}")
 
     N, top_k = routing_weights.shape
 
@@ -46,20 +48,24 @@ def create_inputs(input_tensor):
 
     # 4. Calculate token counts per expert
     num_experts = moe_block.num_experts
-    expert_counts = torch.bincount(sorted_experts, minlength=num_experts)
+    expert_counts = torch.bincount(sorted_experts, minlength=num_experts) # count of tokens per expert
 
     # 5. Calculate padded counts (multiple of 128 for NKI tile size)
     TILE_SIZE = 128
-    padded_expert_counts = torch.ceil(expert_counts / TILE_SIZE).to(torch.int32) * TILE_SIZE
-    total_padded_tokens = padded_expert_counts.sum().item()
+    max_expert_tokens = expert_counts.max().item()
+    MAX_TOK_PER_EXPERT = math.ceil(max_expert_tokens / TILE_SIZE) * TILE_SIZE
+    
+    #padded_expert_counts = torch.ceil(expert_counts / TILE_SIZE).to(torch.int32) * TILE_SIZE
+    total_padded_tokens = num_experts * MAX_TOK_PER_EXPERT #padded_expert_counts.sum().item()
 
     # 6. Pre-allocate padded tensors
     padded_sorted_tokens = torch.zeros((total_padded_tokens, hidden_dim), dtype=torch.bfloat16)
     padded_routing_weights = torch.zeros(total_padded_tokens, dtype=torch.bfloat16)
     
     # Calculate new offsets based on padded counts
-    expert_offsets = torch.zeros(num_experts + 1, dtype=torch.int32)
-    expert_offsets[1:] = torch.cumsum(padded_expert_counts, dim=0)
+    #expert_offsets = torch.zeros(num_experts + 1, dtype=torch.int32)
+    #expert_offsets[1:] = torch.cumsum(padded_expert_counts, dim=0)
+    expert_offsets = torch.arange(num_experts + 1, dtype=torch.int32) * MAX_TOK_PER_EXPERT
 
     # 7. Copy the real tokens into the padded buffers
     current_read_idx = 0
@@ -67,7 +73,7 @@ def create_inputs(input_tensor):
     
     for i in range(num_experts):
         count = expert_counts[i].item()
-        padded_count = padded_expert_counts[i].item()
+        padded_count = MAX_TOK_PER_EXPERT #padded_expert_counts[i].item()
         
         if count > 0:
             padded_sorted_tokens[current_write_idx : current_write_idx + count] = \
@@ -89,8 +95,10 @@ def create_inputs(input_tensor):
     w3_experts = torch.stack(w3_list).to(dtype=torch.bfloat16).contiguous()
     w2_experts = torch.stack(w2_list).to(dtype=torch.bfloat16).contiguous()
 
-    # 9. Pre-allocate the output buffer sized to the padded T
-    output_tokens = torch.zeros((total_padded_tokens, hidden_dim), dtype=torch.bfloat16)
+    # 9. Reshape expert weights from 3D (num_experts, dim1, dim2) to 2D for kernel indexing
+    w1_experts = w1_experts.reshape(-1, w1_experts.shape[-1]).contiguous()
+    w3_experts = w3_experts.reshape(-1, w3_experts.shape[-1]).contiguous()
+    w2_experts = w2_experts.reshape(-1, w2_experts.shape[-1]).contiguous()
 
     return (
         (padded_sorted_tokens.T).contiguous(),
@@ -98,5 +106,10 @@ def create_inputs(input_tensor):
         w3_experts,
         w2_experts,
         padded_routing_weights.contiguous(),
-        expert_offsets
+        expert_offsets,
+        sorted_expert_indices,
+        expert_counts,
+        top_k,
+        N,
+        moe_block,
     )
