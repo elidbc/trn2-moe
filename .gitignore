@@ -11,3 +11,8 @@
 
 # Weights
 weights/
+
+# Neff/Neuron code
+*.pb
+*.neff
+*.ntff

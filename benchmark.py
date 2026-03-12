@@ -7,6 +7,8 @@ import torch_xla
 import torch_xla.core.xla_model as xm
 
 import nki
+import nki.language as nl
+import nki.isa as nisa
 
 from naive_moe import routing_kernel, moe_kernel, moe_expert_kernel
 from host import create_inputs
@@ -173,9 +175,11 @@ def run_expert_moe_kernel(args):
 
     return final_outputs
 
+    
+
+
 # Registry — add new kernel runners here as the project grows.
 KERNEL_RUNNERS = {
-    "naive_moe": run_naive_moe_kernel,
     "expert_moe": run_expert_moe_kernel,
 }
 
