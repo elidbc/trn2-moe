@@ -26,7 +26,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from naive_moe import moe_expert_kernel
+from kervel_v0 import moe_expert_kernel
 from mistral_moe import MixtralConfig, MixtralSparseMoeBlock
 
 TILE_SIZE = 128

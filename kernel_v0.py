@@ -71,7 +71,6 @@ def routing_kernel(inputs_T, routing_weights): # Deprecated
     return probs_out
 
 
-
 @nki.jit
 def moe_expert_kernel(sorted_tokens, w1_experts, w3_experts, w2_experts, expert_offsets):
     feature_dim, T = sorted_tokens.shape
