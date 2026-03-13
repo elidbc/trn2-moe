@@ -6,7 +6,7 @@ Routing (token->expert dispatch) and recombination (weighted top-k sum) are
 in PyTorch; the expert FFN compute uses moe_expert_kernel from naive_moe.py.
 
 Running on hardware automatically generates neff files in the Neuron compile
-cache.  Use --profile to capture ntff trace files for neuron-profile.
+cache. 
 
 Usage:
     # Hardware run with correctness check
@@ -14,9 +14,6 @@ Usage:
 
     # Pure-PyTorch simulation (no Trainium required)
     python moe_nki.py --batch-size 1 --seq-len 128 --check --simulate
-
-    # Larger workload with profiling
-    python moe_nki.py --batch-size 1 --seq-len 1024 --profile moe_full
 """
 
 import argparse
@@ -275,8 +272,6 @@ def main():
                         help="Pure-PyTorch fallback (no Trainium needed)")
     parser.add_argument("--check", action="store_true",
                         help="Correctness check vs CPU float32 reference")
-    parser.add_argument("--profile", type=str, default=None, metavar="NAME",
-                        help="Capture profile as NAME.neff / NAME.ntff")
     parser.add_argument("--seed", type=int, default=42,
                         help="Random seed [default: 42]")
     parser.add_argument("--random-weights", action="store_true",
@@ -370,16 +365,6 @@ def main():
                 output_f32,
                 block_out.reshape_as(output_f32).float(),
             )
-
-    # ── Profile ──
-    """if args.profile:
-        print(f"\nCapturing trace -> {args.profile}.neff / {args.profile}.ntff")
-        subprocess.run(
-            ["neuron-profile", "capture",
-             "-n", f"{args.profile}.neff",
-             "-s", f"{args.profile}.ntff"],
-            check=True,
-        )"""
 
     print("\nDone.")
 
