@@ -16,3 +16,4 @@ weights/
 *.pb
 *.neff
 *.ntff
+PostSPMDPassesExecutionDuration.txt

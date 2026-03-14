@@ -97,6 +97,7 @@ def moe_expert_kernel(sorted_tokens, w1_experts, w3_experts, w2_experts, expert_
         for m in nl.affine_range(num_m_tiles):
             # bf16 intermediate: safe to truncate here; the down-projection
             # GEMM accumulates back into fp32.
+            
             intermediate = nl.ndarray((TILE_M, expert_dim), dtype=sorted_tokens.dtype, buffer=nl.sbuf)
 
             # ── Gate / Up projections ──
@@ -128,11 +129,12 @@ def moe_expert_kernel(sorted_tokens, w1_experts, w3_experts, w2_experts, expert_
                     nisa.nc_matmul(up_acc, lhsT_tile, rhs_up)
 
                 # SiLU activation in fp32 (sigmoid is numerically sensitive)
-                sig_gate = nl.ndarray((TILE_M, TILE_N), dtype=nl.float32, buffer=nl.sbuf)
-                nisa.activation(dst=sig_gate, op=nl.sigmoid, data=gate_acc)
-
+                #sig_gate = nl.ndarray((TILE_M, TILE_N), dtype=nl.float32, buffer=nl.sbuf)
                 silu_gate = nl.ndarray((TILE_M, TILE_N), dtype=nl.float32, buffer=nl.sbuf)
-                nisa.tensor_tensor(dst=silu_gate, data1=gate_acc, data2=sig_gate, op=nl.multiply)
+                nisa.activation(dst=silu_gate, op=nl.silu, data=gate_acc)
+
+                
+                #nisa.tensor_tensor(dst=silu_gate, data1=gate_acc, data2=silu_gate, op=nl.multiply)
 
                 # Truncate to bf16 on write to intermediate
                 out_tile = nl.ndarray((TILE_M, TILE_N), dtype=nl.bfloat16, buffer=nl.sbuf)
@@ -175,26 +177,3 @@ def moe_expert_kernel(sorted_tokens, w1_experts, w3_experts, w2_experts, expert_
 
     return output_tokens
 
-
-def main():
-    T = 1024
-    feature_dim = 4096
-    expert_dim = 14336
-    num_experts = 8
-
-    sorted_tokens = np.random.randn(feature_dim, T).astype(np.float32)
-    w1_experts = np.random.randn(num_experts * feature_dim, expert_dim).astype(np.float32)
-    w3_experts = np.random.randn(num_experts * feature_dim, expert_dim).astype(np.float32)
-    w2_experts = np.random.randn(num_experts * expert_dim, feature_dim).astype(np.float32)
-    expert_offsets = np.linspace(0, T, num_experts + 1, dtype=np.int32)
-    output_tokens = np.zeros((T, feature_dim), dtype=np.float32)
-
-    _ = bench_moe_expert(sorted_tokens, w1_experts, w3_experts, w2_experts, expert_offsets, output_tokens)
-
-    lat = bench_moe_expert.benchmark_result.nc_latency
-    print(f"p50: {lat.get_latency_percentile(50):.2f} us")
-    print(f"p90: {lat.get_latency_percentile(90):.2f} us")
-    print(f"p99: {lat.get_latency_percentile(99):.2f} us")
-
-if __name__ == "__main__":
-    main()

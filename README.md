@@ -4,90 +4,39 @@ CS217 Final Project — Profiling MoE layer kernels on AWS's Trainium2 accelerat
 
 ## Setup
 
-Run the Neuron SDK setup script on a Trainium2 instance:
-
+Run the environment launch script on a Trainium2 instance, and set the following env variable:
 ```bash
-bash setup_neuron.sh
+source /opt/aws_neuronx_venv_pytorch_2_9/bin/activate
+source /opt/aws_neuronx_venv_pytorch_2_9_nxd_training/bin/activate
+export NEURON_PLATFORM_TARGET_OVERRIDE="trn2"
 ```
 
-Install Python dependencies:
 
+Run the harness, use the following flags to specify what workload will be executed
 ```bash
-pip install -r requirements.txt
+python harness.py
 ```
 
-## Benchmark
+### Profiling
 
-`benchmark.py` is the central entry point for running and profiling NKI kernels.
+To generate a profile:
 
-### Basic usage
-
-Run the default GEMM kernel benchmark on hardware:
-
+To generate an .neff file when executing a kernel, ensure this env variable is set:
 ```bash
-python benchmark.py
+export NEURON_FRAMEWORK_DEBUG=1
 ```
 
-### Flags
-
-| Flag | Description |
-|------|-------------|
-| `--kernel {gemm}` | Kernel to benchmark. More kernels (e.g. MoE expert, gating) will be added as the project progresses. Default: `gemm`. |
-| `--profile NAME` | Profile the run and save trace files as `NAME.neff` / `NAME.ntff` for viewing in Neuron Profile. |
-| `--check` | Verify kernel output against a NumPy reference before benchmarking. |
-| `--simulate` | Run the kernel on CPU via the NKI simulator (no Trainium hardware required). |
-| `--m M` | GEMM M dimension — rows of A and C (default: 1024). |
-| `--k K` | GEMM K dimension — inner / contraction dimension (default: 1024). |
-| `--n N` | GEMM N dimension — columns of B and C, must be a multiple of 512 (default: 1024). |
-| `--dtype {float16,float32}` | Element data type (default: float32). |
-| `--warmup W` | Number of warmup iterations before timing (default: 5). |
-| `--iters I` | Number of timed iterations (default: 20). |
-| `--seed S` | Random seed for reproducibility (default: 42). |
-
-**Reserved flags for future MoE kernels:**
-
-| Flag | Description |
-|------|-------------|
-| `--num-experts` | Number of experts (default: 8). |
-| `--top-k` | Top-k experts routed per token (default: 2). |
-| `--hidden-size` | Hidden dimension (default: 4096). |
-| `--intermediate-size` | Expert FFN intermediate dimension (default: 14336). |
-
-### Examples
-
-Profile a 4096×4096 GEMM and generate trace files:
+To extract an .ntff profile file from a produced .neff file:
 
 ```bash
-python benchmark.py --kernel gemm --m 4096 --k 4096 --n 4096 --profile gemm_4k
+neuron-profile capture \
+  -n ~/neuron_profiles/e2e_moe_20260311/e2e_moe.neff \
+  -s ~/neuron_profiles/e2e_moe_20260311/e2e_moe.ntff
 ```
 
-Check correctness using the CPU simulator (no hardware needed):
+To view the CLI summary of the profiled Kernel:
 
 ```bash
-python benchmark.py --check --simulate
+neuron-profile view --output-format summary-text -n <path_to.neff> -s <path_to.ntff>
 ```
 
-Benchmark in float16 with custom dimensions:
-
-```bash
-python benchmark.py --dtype float16 --m 2048 --k 2048 --n 2048
-```
-
-### Viewing profiles
-
-After generating a profile, open the trace in Neuron Profile:
-
-```bash
-neuron-profile view -n <name>.neff -s <name>.ntff
-```
-
-## Project structure
-
-| File | Purpose |
-|------|---------|
-| `pytorch_moe.py` | Reference PyTorch MoE block (Mixtral-style). |
-| `gemm_nki.py` | Tiled GEMM kernel written in NKI for Trainium. |
-| `benchmark.py` | CLI benchmark and profiling harness. |
-| `cs149/` | Reference NKI kernels and test harness from CS149. |
-| `setup_neuron.sh` | Neuron SDK installation script. |
-| `requirements.txt` | Python dependencies. |

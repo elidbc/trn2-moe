@@ -19,18 +19,20 @@ Usage:
 import argparse
 import math
 import os
-import subprocess
+import time
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from kervel_v0 import moe_expert_kernel
-from mistral_moe import MixtralConfig, MixtralSparseMoeBlock
+from kernel_v0 import moe_expert_kernel
+#from kernel_v1 import moe_expert_kernel_v1
+from kernel_v2 import moe_expert_kernel_v2
+from mixtral_references.mistral_moe import MixtralConfig, MixtralSparseMoeBlock
+
 
 TILE_SIZE = 128
-MODEL_PATH = "weights/uncompiled_model_weights/mistral_moe.pt"
+MODEL_PATH = "weights/mistral_moe.pt"
 
 
 def _max_tok_per_expert(num_tokens, top_k, num_experts):
@@ -51,7 +53,7 @@ class NKIMoELayer(nn.Module):
     correctness checks can reuse the device's exact routing decisions.
     """
 
-    def __init__(self, hidden_size=4096, intermediate_size=14336,
+    def __init__(self, hidden_size=4096, intermediate_size=4096,
                  num_experts=8, top_k=2, simulate=False):
         super().__init__()
         self.hidden_size = hidden_size
@@ -71,8 +73,6 @@ class NKIMoELayer(nn.Module):
         self.register_buffer(
             "w2_experts",
             torch.empty(num_experts * intermediate_size, hidden_size))
-
-    # ── Factory helpers ──────────────────────────────────────────────
 
     @classmethod
     def from_pretrained(cls, model_path=MODEL_PATH, simulate=False):
@@ -112,8 +112,9 @@ class NKIMoELayer(nn.Module):
 
         return layer.to(dtype=torch.bfloat16), block
 
+
     @classmethod
-    def random_init(cls, hidden_size=4096, intermediate_size=14336,
+    def random_init(cls, hidden_size=512, intermediate_size=1024,
                     num_experts=8, top_k=2, simulate=False):
         """Create with Kaiming-uniform random weights."""
         layer = cls(hidden_size, intermediate_size, num_experts, top_k,
@@ -175,7 +176,8 @@ class NKIMoELayer(nn.Module):
             offsets = (torch.arange(self.num_experts + 1,
                                     dtype=torch.int32,
                                     device=x.device) * max_tok)
-            expert_out = moe_expert_kernel(
+            print(f"offsets shape: {offsets.shape}")
+            expert_out = moe_expert_kernel_v2[4](
                 pad_tok_T,
                 self.w1_experts, self.w3_experts, self.w2_experts,
                 offsets,
@@ -290,17 +292,16 @@ def main():
 
     # ── Build model ──
     ref_block = None
-    use_pretrained = (not args.random_weights) and os.path.exists(MODEL_PATH)
+    use_pretrained = not args.random_weights and os.path.exists(MODEL_PATH)
 
     if use_pretrained:
+        print(f"loading pretrained weights from {MODEL_PATH}")
         model, ref_block = NKIMoELayer.from_pretrained(
-            simulate=args.simulate)
-        print(f"Loaded pretrained weights from {MODEL_PATH}")
+            simulate=args.simulate, model_path=MODEL_PATH)
     else:
-        if not args.random_weights and not os.path.exists(MODEL_PATH):
-            print(f"WARNING: {MODEL_PATH} not found — using random weights")
+        print("Initializing with random weights")
         model = NKIMoELayer.random_init(simulate=args.simulate)
-        print("Initialized with random weights")
+
 
     print(f"  hidden={model.hidden_size}  intermediate={model.intermediate_size}  "
           f"experts={model.num_experts}  top_k={model.top_k}")
@@ -320,7 +321,10 @@ def main():
     if args.simulate:
         print("\nRunning NKI MoE (PyTorch simulate) ...")
         with torch.no_grad():
+            t0 = time.perf_counter()
             output, topk_idx, rw = model(inputs)
+            t1 = time.perf_counter()
+        print(f"  Elapsed: {(t1 - t0) * 1000:.2f} ms")
         output_f32 = output.float()
         topk_idx_cpu = topk_idx
         rw_cpu = rw
@@ -332,10 +336,21 @@ def main():
         model = model.to(device)
         inputs_dev = inputs.to(device)
 
-        print("\nRunning NKI MoE on Trainium ...")
+        # Warmup (triggers XLA compilation)
+        print("\nWarming up (XLA compile) ...")
         with torch.no_grad():
+            _ = model(inputs_dev)
+        torch_xla.sync()
+
+        # Timed run
+        print("Running NKI MoE on Trainium ...")
+        with torch.no_grad():
+            t0 = time.perf_counter()
             output, topk_idx, rw = model(inputs_dev)
-        xm.mark_step()
+            torch_xla.sync()
+            t1 = time.perf_counter()
+
+        print(f"  Elapsed: {(t1 - t0) * 1000:.2f} ms")
         output_f32 = output.cpu().float()
         topk_idx_cpu = topk_idx.cpu()
         rw_cpu = rw.cpu()
