@@ -1,0 +1,43 @@
+Potentially Useful Links:
+- Dynamic control flow  
+    - https://awsdocs-neuron.readthedocs-hosted.com/en/latest/nki/deep-dives/nki-migration-guide.html#consistent-control-flow-behavior
+- Kernel/model bucketing
+    - https://awsdocs-neuron.readthedocs-hosted.com/en/latest/about-neuron/appnotes/torch-neuron/bucketing-app-note.html#bucketing-app-note
+
+
+
+
+
+
+
+
+- We can do a dynamic control flow setup using registers (https://awsdocs-neuron.readthedocs-hosted.com/en/latest/nki/deep-dives/nki-migration-guide.html#consistent-control-flow-behavior)
+  but it means that the compiler won't do any pipelining probably
+- Kernel 
+
+
+final kernel stucture should look something like this:
+
+
+class NKIMixtralMoE(torch.nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        # Initialize standard PyTorch weights here
+        self.gate = torch.nn.Linear(...)
+        # ...
+        
+    def forward(self, hidden_states):
+        # 1. Route (Standard PyTorch - runs on Trainium)
+        routing_weights, selected_experts = self.router(hidden_states)
+        
+        # 2. Sort/Permute (Standard PyTorch - runs on Trainium)
+        sorted_tokens, expert_offsets = self.sort_tokens(hidden_states, selected_experts)
+        
+        # 3. Compute (Custom NKI - runs on Trainium)
+        # The NKI compiler will inline this into the larger device graph!
+        expert_outputs = fused_expert_kernel(sorted_tokens, self.w1, self.w3, self.w2, expert_offsets)
+        
+        # 4. Un-sort (Standard PyTorch - runs on Trainium)
+        final_output = self.unsort_and_combine(expert_outputs, routing_weights, ...)
+        
+        return final_output
