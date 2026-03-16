@@ -12,7 +12,7 @@ export NEURON_PLATFORM_TARGET_OVERRIDE="trn2"
 ```
 
 
-Run the harness, use the following flags to specify what workload will be executed
+Run the harness to execute custom kernels, use the following flags to specify what workload will be executed
 ```bash
 python harness.py
 ```
