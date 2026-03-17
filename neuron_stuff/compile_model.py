@@ -6,9 +6,9 @@ import glob
 import torch_neuronx # Required for Trainium compilation
 from mistral_moe import MixtralConfig, MixtralSparseMoeBlock
 
-INPUT_MODEL_PATH = "../weights/uncompiled_model_weights/mistral_moe.pt"
+INPUT_MODEL_PATH = "../weights/uncompiled_model_weights/mistral_moe_new.pt"
 INPUT_TENSOR_PATH = "../weights/input_weights/prefill_b1_s4096.pt"
-OUTPUT_MODEL_PATH = "../weights/compiled_model_weights/mistral_moe.pt"
+OUTPUT_MODEL_PATH = "../weights/compiled_model_weights/mistral_moe_new.pt"
 OUTPUT_TENSOR_PATH = "../weights/output_weights/out_prefill_b1_s4096.pt"
 BLOCK_SIZE = 128
 
@@ -52,7 +52,7 @@ def main():
         # save output tensor
         print(f"Saving output tensor locally to {OUTPUT_TENSOR_PATH}...")
         torch.save(output_tensor, OUTPUT_TENSOR_PATH)
-        
+
 
 if __name__ == "__main__":
     main()

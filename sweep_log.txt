@@ -1,0 +1,525 @@
+========================================
+MoE EXPERIMENT SWEEP
+Started: Tue Mar 17 06:24:25 UTC 2026
+========================================
+
+>>> [single_baseline] nproc=1 — Tue Mar 17 06:24:25 UTC 2026
+  ✓ Parallel state: TP=1, EP=1
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Latency: 325.91 +/- 0.23 ms
+    Throughput: 50,271 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Latency: 82.18 +/- 0.11 ms
+    Throughput: 49,845 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+2026-Mar-17 06:25:08.674303 4135012:4135071 ERROR  TDRV:dml_dump                                Wrote nrt memory alloc debug info to /tmp/nrt_mem_log_device_0_69b8f3c4.csv
+2026-Mar-17 06:25:08.678609 4135012:4135071 ERROR  TDRV:dml_driver_dump                         Wrote driver memory alloc debug info to /tmp/neuron_mem_log_device_0_hbm_2_69b8f3c4.csv
+2026-Mar-17 06:25:08.681102 4135012:4135071 ERROR  TDRV:print_lnc_hbm_details                   LNC size is 2. Neuron Cores using this HBM: NC 4 and NC 5
+2026-Mar-17 06:25:08.683211 4135012:4135071 ERROR  TDRV:log_dev_mem                             Failed to allocate 3.500GB (alignment: none, usage: scratchpad) on ND 0:NC 4
+2026-Mar-17 06:25:08.685585 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1001
+2026-Mar-17 06:25:08.687302 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1002
+2026-Mar-17 06:25:08.688888 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1003
+2026-Mar-17 06:25:08.690470 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1004
+2026-Mar-17 06:25:08.692088 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1005
+2026-Mar-17 06:25:08.693645 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1006
+2026-Mar-17 06:25:08.695193 4135012:4135071 ERROR  TDRV:log_dev_mem_usage_table                 Displaying Current Memory Utilization:
+2026-Mar-17 06:25:08.695286 4135012:4135071 ERROR  TDRV:log_dev_mem_usage_table                 Also logged memory breakdown to /tmp/neuron_mem_table_device_0_nc_4.log
+2026-Mar-17 06:25:08.697378 4135012:4135071 ERROR  TDRV:mem_ref_copy_and_stage_mr_to_hbm        Failed to allocate aligned (0) buffer in MLA DRAM for intermediate0 of size 3758096384 bytes, HBM 2
+2026-Mar-17 06:25:08.699801 4135012:4135071 ERROR  NMGR:dlr_kelf_stage                          Failed to create logical core info for subgraph 0 to 1
+2026-Mar-17 06:25:08.701688 4135012:4135071 ERROR  NMGR:kmgr_load_nn_internal_v2                Failed to stage graph to NeuronCore
+2026-Mar-17 06:25:08.731883 4135012:4135071 ERROR  NMGR:kmgr_load_nn_post_metrics               Failed to load NN: /tmp/ubuntu/neuroncc_compile_workdir/5ea43039-de56-44ac-a6f5-fc491b0515ad/model.MODULE_16464399414252769360+fad94d7c.neff, err: 4
+2026-Mar-17 06:25:08.735023 4135012:4135071 ERROR   NRT:nrt_infodump                            Neuron runtime information - please include in any support request:
+2026-Mar-17 06:25:08.737192 4135012:4135071 ERROR   NRT:nrt_infodump                            ------------->8------------[ cut here ]------------>8-------------
+2026-Mar-17 06:25:08.739229 4135012:4135071 ERROR   NRT:nrt_infodump                            NRT version: 2.30.51.0 (faafe26f0401e2d1d9cec13866f859b15b529d1e)
+2026-Mar-17 06:25:08.741259 4135012:4135071 ERROR   NRT:nrt_infodump                            Embedded FW version: 1.20.7.0 (5c02806e7654c048c25686ecf0b4e820d09835c8) loaded from "libnrtucode_extisa.so"
+2026-Mar-17 06:25:08.743789 4135012:4135071 ERROR   NRT:nrt_infodump                            CCOM version: 2.30.59.0- (compat 84)
+2026-Mar-17 06:25:08.745499 4135012:4135071 ERROR   NRT:nrt_infodump                            NCFW version: 2.30.4.0 (ec03b7564ea1e69c0f1dad059a0f89757decaf2b)
+2026-Mar-17 06:25:08.747513 4135012:4135071 ERROR   NRT:nrt_infodump                            Instance ID: i-0d74f9fc687e62ec3
+2026-Mar-17 06:25:08.749282 4135012:4135071 ERROR   NRT:nrt_infodump                            Cluster ID: N/A
+2026-Mar-17 06:25:08.750702 4135012:4135071 ERROR   NRT:nrt_infodump                            Kernel: Linux 6.17.0-1007-aws #7~24.04.1-Ubuntu SMP Thu Jan 22 21:04:49 UTC 2026
+2026-Mar-17 06:25:08.752993 4135012:4135071 ERROR   NRT:nrt_infodump                            Nodename: ip-172-31-31-212
+2026-Mar-17 06:25:08.754585 4135012:4135071 ERROR   NRT:nrt_infodump                            Driver version: 2.26.5.0
+2026-Mar-17 06:25:08.756469 4135012:4135071 ERROR   NRT:nrt_infodump                            Failure: NRT_RESOURCE in nrt_load_util
+2026-Mar-17 06:25:08.758184 4135012:4135071 ERROR   NRT:nrt_infodump                            Visible cores: 0
+2026-Mar-17 06:25:08.759609 4135012:4135071 ERROR   NRT:nrt_infodump                            Environment:
+2026-Mar-17 06:25:08.760857 4135012:4135071 ERROR   NRT:nrt_infodump                                NEURON_COMPILE_CACHE_URL=s3://cs217-moe-neuron-cache
+2026-Mar-17 06:25:08.762771 4135012:4135071 ERROR   NRT:nrt_infodump                                NEURON_LIBRARY_PATH=/opt/aws_neuronx_venv_pytorch_2_9/lib/python3.12/site-packages/libneuronxla/libneuronpjrt.so
+2026-Mar-17 06:25:08.765447 4135012:4135071 ERROR   NRT:nrt_infodump                                NEURON_RT_ROOT_COMM_ID=127.0.0.1:62182
+2026-Mar-17 06:25:08.767080 4135012:4135071 ERROR   NRT:nrt_infodump                                NEURON_PJRT_PROCESS_INDEX=0
+2026-Mar-17 06:25:08.768655 4135012:4135071 ERROR   NRT:nrt_infodump                                NEURON_PT_MPMD_MODE=1
+2026-Mar-17 06:25:08.770185 4135012:4135071 ERROR   NRT:nrt_infodump                                NEURON_PJRT_WORLD_SIZE=1
+2026-Mar-17 06:25:08.771735 4135012:4135071 ERROR   NRT:nrt_infodump                                NEURON_INTERNAL_PJRT_C_API_VERSION=0.75
+2026-Mar-17 06:25:08.773457 4135012:4135071 ERROR   NRT:nrt_infodump                            -------------8<-----------[ cut to here ]-----------8<------------
+2026-Mar-17 06:25:10.381046 4135012:4135071 ERROR   NRT:nrt_load                                Failed to load nrt model
+    ✗ Error: Load: error condition NRT_RESOURCE == rt_status: 
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Latency: 326.13 +/- 0.24 ms
+    Throughput: 50,238 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Latency: 82.22 +/- 0.08 ms
+    Throughput: 49,818 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+2026-Mar-17 06:25:19.933882 4135012:4135071 ERROR  TDRV:dml_dump                                Wrote nrt memory alloc debug info to /tmp/nrt_mem_log_device_0_69b8f3cf.csv
+2026-Mar-17 06:25:19.938106 4135012:4135071 ERROR  TDRV:dml_driver_dump                         Wrote driver memory alloc debug info to /tmp/neuron_mem_log_device_0_hbm_2_69b8f3cf.csv
+2026-Mar-17 06:25:19.940633 4135012:4135071 ERROR  TDRV:print_lnc_hbm_details                   LNC size is 2. Neuron Cores using this HBM: NC 4 and NC 5
+2026-Mar-17 06:25:19.942670 4135012:4135071 ERROR  TDRV:log_dev_mem                             Failed to allocate 3.500GB (alignment: none, usage: scratchpad) on ND 0:NC 4
+2026-Mar-17 06:25:19.944975 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1001
+2026-Mar-17 06:25:19.946519 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1002
+2026-Mar-17 06:25:19.948028 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1003
+2026-Mar-17 06:25:19.949599 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1004
+2026-Mar-17 06:25:19.951223 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1005
+2026-Mar-17 06:25:19.952799 4135012:4135071 ERROR  TDRV:ht_insert                               Duplicate entry key: 1006
+2026-Mar-17 06:25:19.954323 4135012:4135071 ERROR  TDRV:log_dev_mem_usage_table                 Displaying Current Memory Utilization:
+2026-Mar-17 06:25:19.954417 4135012:4135071 ERROR  TDRV:log_dev_mem_usage_table                 Also logged memory breakdown to /tmp/neuron_mem_table_device_0_nc_4.log
+2026-Mar-17 06:25:19.956506 4135012:4135071 ERROR  TDRV:mem_ref_copy_and_stage_mr_to_hbm        Failed to allocate aligned (0) buffer in MLA DRAM for intermediate0 of size 3758096384 bytes, HBM 2
+2026-Mar-17 06:25:19.958955 4135012:4135071 ERROR  NMGR:dlr_kelf_stage                          Failed to create logical core info for subgraph 0 to 1
+2026-Mar-17 06:25:19.960880 4135012:4135071 ERROR  NMGR:kmgr_load_nn_internal_v2                Failed to stage graph to NeuronCore
+2026-Mar-17 06:25:19.980435 4135012:4135071 ERROR  NMGR:kmgr_load_nn_post_metrics               Failed to load NN: /tmp/ubuntu/neuroncc_compile_workdir/5ea43039-de56-44ac-a6f5-fc491b0515ad/model.MODULE_16464399414252769360+fad94d7c.neff, err: 4
+2026-Mar-17 06:25:21.588782 4135012:4135071 ERROR   NRT:nrt_load                                Failed to load nrt model
+    ✗ Error: Load: error condition NRT_RESOURCE == rt_status: 
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+single_baseline      skewed           8192               -        -              -                    - ERROR     
+single_baseline      uniform          8192               -        -              -                    - ERROR     
+Results saved to benchmark_results.json (6 total, 6 new)
+<<< [single_baseline] done — Tue Mar 17 06:25:22 UTC 2026
+
+>>> [single_bwmm] nproc=1 — Tue Mar 17 06:25:22 UTC 2026
+  ✓ Parallel state: TP=1, EP=1
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Latency: 326.10 +/- 0.18 ms
+    Throughput: 50,242 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Latency: 82.20 +/- 0.08 ms
+    Throughput: 49,828 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+2026-Mar-17 06:26:06.773370 4135676:4135746 ERROR  TDRV:dml_dump                                Wrote nrt memory alloc debug info to /tmp/nrt_mem_log_device_0_69b8f3fe.csv
+2026-Mar-17 06:26:06.778619 4135676:4135746 ERROR  TDRV:dml_driver_dump                         Wrote driver memory alloc debug info to /tmp/neuron_mem_log_device_0_hbm_2_69b8f3fe.csv
+2026-Mar-17 06:26:06.781217 4135676:4135746 ERROR  TDRV:print_lnc_hbm_details                   LNC size is 2. Neuron Cores using this HBM: NC 4 and NC 5
+2026-Mar-17 06:26:06.783287 4135676:4135746 ERROR  TDRV:log_dev_mem                             Failed to allocate 3.500GB (alignment: none, usage: scratchpad) on ND 0:NC 4
+2026-Mar-17 06:26:06.785586 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1001
+2026-Mar-17 06:26:06.787231 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1002
+2026-Mar-17 06:26:06.788853 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1003
+2026-Mar-17 06:26:06.790399 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1004
+2026-Mar-17 06:26:06.791979 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1005
+2026-Mar-17 06:26:06.793513 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1006
+2026-Mar-17 06:26:06.795105 4135676:4135746 ERROR  TDRV:log_dev_mem_usage_table                 Displaying Current Memory Utilization:
+2026-Mar-17 06:26:06.795195 4135676:4135746 ERROR  TDRV:log_dev_mem_usage_table                 Also logged memory breakdown to /tmp/neuron_mem_table_device_0_nc_4.log
+2026-Mar-17 06:26:06.797275 4135676:4135746 ERROR  TDRV:mem_ref_copy_and_stage_mr_to_hbm        Failed to allocate aligned (0) buffer in MLA DRAM for intermediate0 of size 3758096384 bytes, HBM 2
+2026-Mar-17 06:26:06.799685 4135676:4135746 ERROR  NMGR:dlr_kelf_stage                          Failed to create logical core info for subgraph 0 to 1
+2026-Mar-17 06:26:06.801487 4135676:4135746 ERROR  NMGR:kmgr_load_nn_internal_v2                Failed to stage graph to NeuronCore
+2026-Mar-17 06:26:06.820389 4135676:4135746 ERROR  NMGR:kmgr_load_nn_post_metrics               Failed to load NN: /tmp/ubuntu/neuroncc_compile_workdir/5ea43039-de56-44ac-a6f5-fc491b0515ad/model.MODULE_16464399414252769360+fad94d7c.neff, err: 4
+2026-Mar-17 06:26:06.823489 4135676:4135746 ERROR   NRT:nrt_infodump                            Neuron runtime information - please include in any support request:
+2026-Mar-17 06:26:06.825504 4135676:4135746 ERROR   NRT:nrt_infodump                            ------------->8------------[ cut here ]------------>8-------------
+2026-Mar-17 06:26:06.827542 4135676:4135746 ERROR   NRT:nrt_infodump                            NRT version: 2.30.51.0 (faafe26f0401e2d1d9cec13866f859b15b529d1e)
+2026-Mar-17 06:26:06.829545 4135676:4135746 ERROR   NRT:nrt_infodump                            Embedded FW version: 1.20.7.0 (5c02806e7654c048c25686ecf0b4e820d09835c8) loaded from "libnrtucode_extisa.so"
+2026-Mar-17 06:26:06.832133 4135676:4135746 ERROR   NRT:nrt_infodump                            CCOM version: 2.30.59.0- (compat 84)
+2026-Mar-17 06:26:06.833799 4135676:4135746 ERROR   NRT:nrt_infodump                            NCFW version: 2.30.4.0 (ec03b7564ea1e69c0f1dad059a0f89757decaf2b)
+2026-Mar-17 06:26:06.835804 4135676:4135746 ERROR   NRT:nrt_infodump                            Instance ID: i-0d74f9fc687e62ec3
+2026-Mar-17 06:26:06.837421 4135676:4135746 ERROR   NRT:nrt_infodump                            Cluster ID: N/A
+2026-Mar-17 06:26:06.838842 4135676:4135746 ERROR   NRT:nrt_infodump                            Kernel: Linux 6.17.0-1007-aws #7~24.04.1-Ubuntu SMP Thu Jan 22 21:04:49 UTC 2026
+2026-Mar-17 06:26:06.841101 4135676:4135746 ERROR   NRT:nrt_infodump                            Nodename: ip-172-31-31-212
+2026-Mar-17 06:26:06.842652 4135676:4135746 ERROR   NRT:nrt_infodump                            Driver version: 2.26.5.0
+2026-Mar-17 06:26:06.844516 4135676:4135746 ERROR   NRT:nrt_infodump                            Failure: NRT_RESOURCE in nrt_load_util
+2026-Mar-17 06:26:06.846206 4135676:4135746 ERROR   NRT:nrt_infodump                            Visible cores: 0
+2026-Mar-17 06:26:06.847637 4135676:4135746 ERROR   NRT:nrt_infodump                            Environment:
+2026-Mar-17 06:26:06.848948 4135676:4135746 ERROR   NRT:nrt_infodump                                NEURON_COMPILE_CACHE_URL=s3://cs217-moe-neuron-cache
+2026-Mar-17 06:26:06.850835 4135676:4135746 ERROR   NRT:nrt_infodump                                NEURON_LIBRARY_PATH=/opt/aws_neuronx_venv_pytorch_2_9/lib/python3.12/site-packages/libneuronxla/libneuronpjrt.so
+2026-Mar-17 06:26:06.853514 4135676:4135746 ERROR   NRT:nrt_infodump                                NEURON_RT_ROOT_COMM_ID=127.0.0.1:62182
+2026-Mar-17 06:26:06.855228 4135676:4135746 ERROR   NRT:nrt_infodump                                NEURON_PJRT_PROCESS_INDEX=0
+2026-Mar-17 06:26:06.856857 4135676:4135746 ERROR   NRT:nrt_infodump                                NEURON_PT_MPMD_MODE=1
+2026-Mar-17 06:26:06.858369 4135676:4135746 ERROR   NRT:nrt_infodump                                NEURON_PJRT_WORLD_SIZE=1
+2026-Mar-17 06:26:06.859937 4135676:4135746 ERROR   NRT:nrt_infodump                                NEURON_INTERNAL_PJRT_C_API_VERSION=0.75
+2026-Mar-17 06:26:06.861657 4135676:4135746 ERROR   NRT:nrt_infodump                            -------------8<-----------[ cut to here ]-----------8<------------
+2026-Mar-17 06:26:08.457612 4135676:4135746 ERROR   NRT:nrt_load                                Failed to load nrt model
+    ✗ Error: Load: error condition NRT_RESOURCE == rt_status: 
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Latency: 326.13 +/- 0.28 ms
+    Throughput: 50,237 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Latency: 82.10 +/- 0.21 ms
+    Throughput: 49,892 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+2026-Mar-17 06:26:18.155157 4135676:4135746 ERROR  TDRV:dml_dump                                Wrote nrt memory alloc debug info to /tmp/nrt_mem_log_device_0_69b8f40a.csv
+2026-Mar-17 06:26:18.159339 4135676:4135746 ERROR  TDRV:dml_driver_dump                         Wrote driver memory alloc debug info to /tmp/neuron_mem_log_device_0_hbm_2_69b8f40a.csv
+2026-Mar-17 06:26:18.161845 4135676:4135746 ERROR  TDRV:print_lnc_hbm_details                   LNC size is 2. Neuron Cores using this HBM: NC 4 and NC 5
+2026-Mar-17 06:26:18.163758 4135676:4135746 ERROR  TDRV:log_dev_mem                             Failed to allocate 3.500GB (alignment: none, usage: scratchpad) on ND 0:NC 4
+2026-Mar-17 06:26:18.166361 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1001
+2026-Mar-17 06:26:18.167838 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1002
+2026-Mar-17 06:26:18.169291 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1003
+2026-Mar-17 06:26:18.170692 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1004
+2026-Mar-17 06:26:18.172234 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1005
+2026-Mar-17 06:26:18.173775 4135676:4135746 ERROR  TDRV:ht_insert                               Duplicate entry key: 1006
+2026-Mar-17 06:26:18.175298 4135676:4135746 ERROR  TDRV:log_dev_mem_usage_table                 Displaying Current Memory Utilization:
+2026-Mar-17 06:26:18.175392 4135676:4135746 ERROR  TDRV:log_dev_mem_usage_table                 Also logged memory breakdown to /tmp/neuron_mem_table_device_0_nc_4.log
+2026-Mar-17 06:26:18.177465 4135676:4135746 ERROR  TDRV:mem_ref_copy_and_stage_mr_to_hbm        Failed to allocate aligned (0) buffer in MLA DRAM for intermediate0 of size 3758096384 bytes, HBM 2
+2026-Mar-17 06:26:18.179888 4135676:4135746 ERROR  NMGR:dlr_kelf_stage                          Failed to create logical core info for subgraph 0 to 1
+2026-Mar-17 06:26:18.181751 4135676:4135746 ERROR  NMGR:kmgr_load_nn_internal_v2                Failed to stage graph to NeuronCore
+2026-Mar-17 06:26:18.202618 4135676:4135746 ERROR  NMGR:kmgr_load_nn_post_metrics               Failed to load NN: /tmp/ubuntu/neuroncc_compile_workdir/5ea43039-de56-44ac-a6f5-fc491b0515ad/model.MODULE_16464399414252769360+fad94d7c.neff, err: 4
+2026-Mar-17 06:26:19.804702 4135676:4135746 ERROR   NRT:nrt_load                                Failed to load nrt model
+    ✗ Error: Load: error condition NRT_RESOURCE == rt_status: 
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+single_bwmm          skewed           8192               -        -              -                    - ERROR     
+single_bwmm          uniform          8192               -        -              -                    - ERROR     
+Results saved to benchmark_results.json (12 total, 6 new)
+<<< [single_bwmm] done — Tue Mar 17 06:26:21 UTC 2026
+
+>>> [single_bwmm_drop] nproc=1 — Tue Mar 17 06:26:21 UTC 2026
+  ✓ Parallel state: TP=1, EP=1
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Drop rate: 73.0% (23916/32768)
+    Latency: 326.19 +/- 0.20 ms
+    Throughput: 50,228 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Drop rate: 73.2% (5994/8192)
+    Latency: 82.15 +/- 0.11 ms
+    Throughput: 49,861 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+    Drop rate: 73.0% (11957/16384)
+2026-Mar-17 06:27:04.199303 4136315:4136393 ERROR  TDRV:dml_dump                                Wrote nrt memory alloc debug info to /tmp/nrt_mem_log_device_0_69b8f438.csv
+2026-Mar-17 06:27:04.203552 4136315:4136393 ERROR  TDRV:dml_driver_dump                         Wrote driver memory alloc debug info to /tmp/neuron_mem_log_device_0_hbm_2_69b8f438.csv
+2026-Mar-17 06:27:04.205917 4136315:4136393 ERROR  TDRV:print_lnc_hbm_details                   LNC size is 2. Neuron Cores using this HBM: NC 4 and NC 5
+2026-Mar-17 06:27:04.207791 4136315:4136393 ERROR  TDRV:log_dev_mem                             Failed to allocate 3.500GB (alignment: none, usage: scratchpad) on ND 0:NC 4
+2026-Mar-17 06:27:04.210149 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1001
+2026-Mar-17 06:27:04.211733 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1002
+2026-Mar-17 06:27:04.213307 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1003
+2026-Mar-17 06:27:04.214892 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1004
+2026-Mar-17 06:27:04.216343 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1005
+2026-Mar-17 06:27:04.217788 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1006
+2026-Mar-17 06:27:04.219328 4136315:4136393 ERROR  TDRV:log_dev_mem_usage_table                 Displaying Current Memory Utilization:
+2026-Mar-17 06:27:04.219418 4136315:4136393 ERROR  TDRV:log_dev_mem_usage_table                 Also logged memory breakdown to /tmp/neuron_mem_table_device_0_nc_4.log
+2026-Mar-17 06:27:04.221530 4136315:4136393 ERROR  TDRV:mem_ref_copy_and_stage_mr_to_hbm        Failed to allocate aligned (0) buffer in MLA DRAM for intermediate0 of size 3758096384 bytes, HBM 2
+2026-Mar-17 06:27:04.223932 4136315:4136393 ERROR  NMGR:dlr_kelf_stage                          Failed to create logical core info for subgraph 0 to 1
+2026-Mar-17 06:27:04.225867 4136315:4136393 ERROR  NMGR:kmgr_load_nn_internal_v2                Failed to stage graph to NeuronCore
+2026-Mar-17 06:27:04.252829 4136315:4136393 ERROR  NMGR:kmgr_load_nn_post_metrics               Failed to load NN: /tmp/ubuntu/neuroncc_compile_workdir/5ea43039-de56-44ac-a6f5-fc491b0515ad/model.MODULE_16464399414252769360+fad94d7c.neff, err: 4
+2026-Mar-17 06:27:04.255966 4136315:4136393 ERROR   NRT:nrt_infodump                            Neuron runtime information - please include in any support request:
+2026-Mar-17 06:27:04.258097 4136315:4136393 ERROR   NRT:nrt_infodump                            ------------->8------------[ cut here ]------------>8-------------
+2026-Mar-17 06:27:04.260205 4136315:4136393 ERROR   NRT:nrt_infodump                            NRT version: 2.30.51.0 (faafe26f0401e2d1d9cec13866f859b15b529d1e)
+2026-Mar-17 06:27:04.262216 4136315:4136393 ERROR   NRT:nrt_infodump                            Embedded FW version: 1.20.7.0 (5c02806e7654c048c25686ecf0b4e820d09835c8) loaded from "libnrtucode_extisa.so"
+2026-Mar-17 06:27:04.264769 4136315:4136393 ERROR   NRT:nrt_infodump                            CCOM version: 2.30.59.0- (compat 84)
+2026-Mar-17 06:27:04.266437 4136315:4136393 ERROR   NRT:nrt_infodump                            NCFW version: 2.30.4.0 (ec03b7564ea1e69c0f1dad059a0f89757decaf2b)
+2026-Mar-17 06:27:04.268466 4136315:4136393 ERROR   NRT:nrt_infodump                            Instance ID: i-0d74f9fc687e62ec3
+2026-Mar-17 06:27:04.270175 4136315:4136393 ERROR   NRT:nrt_infodump                            Cluster ID: N/A
+2026-Mar-17 06:27:04.271588 4136315:4136393 ERROR   NRT:nrt_infodump                            Kernel: Linux 6.17.0-1007-aws #7~24.04.1-Ubuntu SMP Thu Jan 22 21:04:49 UTC 2026
+2026-Mar-17 06:27:04.273779 4136315:4136393 ERROR   NRT:nrt_infodump                            Nodename: ip-172-31-31-212
+2026-Mar-17 06:27:04.275337 4136315:4136393 ERROR   NRT:nrt_infodump                            Driver version: 2.26.5.0
+2026-Mar-17 06:27:04.277316 4136315:4136393 ERROR   NRT:nrt_infodump                            Failure: NRT_RESOURCE in nrt_load_util
+2026-Mar-17 06:27:04.279011 4136315:4136393 ERROR   NRT:nrt_infodump                            Visible cores: 0
+2026-Mar-17 06:27:04.280487 4136315:4136393 ERROR   NRT:nrt_infodump                            Environment:
+2026-Mar-17 06:27:04.281777 4136315:4136393 ERROR   NRT:nrt_infodump                                NEURON_COMPILE_CACHE_URL=s3://cs217-moe-neuron-cache
+2026-Mar-17 06:27:04.283663 4136315:4136393 ERROR   NRT:nrt_infodump                                NEURON_LIBRARY_PATH=/opt/aws_neuronx_venv_pytorch_2_9/lib/python3.12/site-packages/libneuronxla/libneuronpjrt.so
+2026-Mar-17 06:27:04.286347 4136315:4136393 ERROR   NRT:nrt_infodump                                NEURON_RT_ROOT_COMM_ID=127.0.0.1:62182
+2026-Mar-17 06:27:04.288123 4136315:4136393 ERROR   NRT:nrt_infodump                                NEURON_PJRT_PROCESS_INDEX=0
+2026-Mar-17 06:27:04.289704 4136315:4136393 ERROR   NRT:nrt_infodump                                NEURON_PT_MPMD_MODE=1
+2026-Mar-17 06:27:04.291217 4136315:4136393 ERROR   NRT:nrt_infodump                                NEURON_PJRT_WORLD_SIZE=1
+2026-Mar-17 06:27:04.292801 4136315:4136393 ERROR   NRT:nrt_infodump                                NEURON_INTERNAL_PJRT_C_API_VERSION=0.75
+2026-Mar-17 06:27:04.294519 4136315:4136393 ERROR   NRT:nrt_infodump                            -------------8<-----------[ cut to here ]-----------8<------------
+2026-Mar-17 06:27:05.896864 4136315:4136393 ERROR   NRT:nrt_load                                Failed to load nrt model
+    ✗ Error: Load: error condition NRT_RESOURCE == rt_status: 
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Drop rate: 0.6% (212/32768)
+    Latency: 326.11 +/- 0.32 ms
+    Throughput: 50,241 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Drop rate: 0.7% (58/8192)
+    Latency: 82.18 +/- 0.08 ms
+    Throughput: 49,841 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+    Drop rate: 0.5% (83/16384)
+2026-Mar-17 06:27:15.404755 4136315:4136393 ERROR  TDRV:dml_dump                                Wrote nrt memory alloc debug info to /tmp/nrt_mem_log_device_0_69b8f443.csv
+2026-Mar-17 06:27:15.409077 4136315:4136393 ERROR  TDRV:dml_driver_dump                         Wrote driver memory alloc debug info to /tmp/neuron_mem_log_device_0_hbm_2_69b8f443.csv
+2026-Mar-17 06:27:15.411581 4136315:4136393 ERROR  TDRV:print_lnc_hbm_details                   LNC size is 2. Neuron Cores using this HBM: NC 4 and NC 5
+2026-Mar-17 06:27:15.413527 4136315:4136393 ERROR  TDRV:log_dev_mem                             Failed to allocate 3.500GB (alignment: none, usage: scratchpad) on ND 0:NC 4
+2026-Mar-17 06:27:15.415858 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1001
+2026-Mar-17 06:27:15.417427 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1002
+2026-Mar-17 06:27:15.418933 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1003
+2026-Mar-17 06:27:15.420431 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1004
+2026-Mar-17 06:27:15.422017 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1005
+2026-Mar-17 06:27:15.423559 4136315:4136393 ERROR  TDRV:ht_insert                               Duplicate entry key: 1006
+2026-Mar-17 06:27:15.425161 4136315:4136393 ERROR  TDRV:log_dev_mem_usage_table                 Displaying Current Memory Utilization:
+2026-Mar-17 06:27:15.425268 4136315:4136393 ERROR  TDRV:log_dev_mem_usage_table                 Also logged memory breakdown to /tmp/neuron_mem_table_device_0_nc_4.log
+2026-Mar-17 06:27:15.427352 4136315:4136393 ERROR  TDRV:mem_ref_copy_and_stage_mr_to_hbm        Failed to allocate aligned (0) buffer in MLA DRAM for intermediate0 of size 3758096384 bytes, HBM 2
+2026-Mar-17 06:27:15.429778 4136315:4136393 ERROR  NMGR:dlr_kelf_stage                          Failed to create logical core info for subgraph 0 to 1
+2026-Mar-17 06:27:15.431660 4136315:4136393 ERROR  NMGR:kmgr_load_nn_internal_v2                Failed to stage graph to NeuronCore
+2026-Mar-17 06:27:15.456452 4136315:4136393 ERROR  NMGR:kmgr_load_nn_post_metrics               Failed to load NN: /tmp/ubuntu/neuroncc_compile_workdir/5ea43039-de56-44ac-a6f5-fc491b0515ad/model.MODULE_16464399414252769360+fad94d7c.neff, err: 4
+2026-Mar-17 06:27:17.051854 4136315:4136393 ERROR   NRT:nrt_load                                Failed to load nrt model
+    ✗ Error: Load: error condition NRT_RESOURCE == rt_status: 
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+single_bwmm_drop     skewed           8192               -        -              -                    - ERROR     
+single_bwmm_drop     uniform          8192               -        -              -                    - ERROR     
+Results saved to benchmark_results.json (18 total, 6 new)
+<<< [single_bwmm_drop] done — Tue Mar 17 06:27:18 UTC 2026
+
+>>> [tp2_baseline] nproc=2 — Tue Mar 17 06:27:18 UTC 2026
+  ✓ Parallel state: TP=2, EP=1
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Latency: 215.24 +/- 13.06 ms
+    Throughput: 76,118 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Latency: 51.31 +/- 0.73 ms
+    Throughput: 79,828 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+    Latency: 109.86 +/- 7.65 ms
+    Throughput: 74,568 tokens/sec
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Latency: 240.92 +/- 2.24 ms
+    Throughput: 68,007 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Latency: 61.30 +/- 0.62 ms
+    Throughput: 66,824 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+    Latency: 121.69 +/- 0.90 ms
+    Throughput: 67,316 tokens/sec
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+Results saved to benchmark_results.json (24 total, 6 new)
+<<< [tp2_baseline] done — Tue Mar 17 06:28:08 UTC 2026
+
+>>> [tp2_bwmm] nproc=2 — Tue Mar 17 06:28:08 UTC 2026
+  ✓ Parallel state: TP=2, EP=1
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Latency: 348.39 +/- 0.21 ms
+    Throughput: 47,028 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Latency: 104.58 +/- 0.17 ms
+    Throughput: 39,165 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+    Latency: 186.69 +/- 0.22 ms
+    Throughput: 43,881 tokens/sec
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Latency: 348.06 +/- 0.14 ms
+    Throughput: 47,072 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Latency: 104.43 +/- 0.23 ms
+    Throughput: 39,222 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+    Latency: 186.20 +/- 0.20 ms
+    Throughput: 43,996 tokens/sec
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+Results saved to benchmark_results.json (30 total, 6 new)
+<<< [tp2_bwmm] done — Tue Mar 17 06:29:18 UTC 2026
+
+>>> [ep2_bwmm] nproc=2 — Tue Mar 17 06:29:18 UTC 2026
+  ✓ Parallel state: TP=1, EP=2
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Latency: 214.13 +/- 14.16 ms
+    Throughput: 76,513 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Latency: 50.92 +/- 1.34 ms
+    Throughput: 80,443 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+    Latency: 107.54 +/- 7.97 ms
+    Throughput: 76,176 tokens/sec
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Latency: 240.40 +/- 1.93 ms
+    Throughput: 68,153 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Latency: 60.69 +/- 0.44 ms
+    Throughput: 67,490 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+    Latency: 121.38 +/- 0.93 ms
+    Throughput: 67,491 tokens/sec
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+Results saved to benchmark_results.json (36 total, 6 new)
+<<< [ep2_bwmm] done — Tue Mar 17 06:30:11 UTC 2026
+
+>>> [tp4_baseline] nproc=4 — Tue Mar 17 06:30:11 UTC 2026
+  ✓ Parallel state: TP=4, EP=1
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Latency: 103.85 +/- 3.92 ms
+    Throughput: 157,772 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Latency: 26.99 +/- 0.27 ms
+    Throughput: 151,770 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+    Latency: 51.21 +/- 0.20 ms
+    Throughput: 159,969 tokens/sec
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Latency: 118.38 +/- 2.41 ms
+    Throughput: 138,400 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Latency: 31.64 +/- 0.42 ms
+    Throughput: 129,458 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+    Latency: 61.08 +/- 1.06 ms
+    Throughput: 134,122 tokens/sec
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+Results saved to benchmark_results.json (42 total, 6 new)
+<<< [tp4_baseline] done — Tue Mar 17 06:31:04 UTC 2026
+
+>>> [tp4_bwmm] nproc=4 — Tue Mar 17 06:31:04 UTC 2026
+  ✓ Parallel state: TP=4, EP=1
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Latency: 188.10 +/- 0.52 ms
+    Throughput: 87,104 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Latency: 50.01 +/- 0.18 ms
+    Throughput: 81,904 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+    Latency: 96.58 +/- 0.27 ms
+    Throughput: 84,821 tokens/sec
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Latency: 188.14 +/- 0.42 ms
+    Throughput: 87,084 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Latency: 50.22 +/- 10.46 ms
+    Throughput: 81,560 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+    Latency: 96.59 +/- 0.29 ms
+    Throughput: 84,808 tokens/sec
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+Results saved to benchmark_results.json (48 total, 6 new)
+<<< [tp4_bwmm] done — Tue Mar 17 07:03:43 UTC 2026
+
+>>> [tp4_bwmm_nosp] nproc=4 — Tue Mar 17 07:03:43 UTC 2026
+  ✓ Parallel state: TP=4, EP=1
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Latency: 102.35 +/- 1.65 ms
+    Throughput: 160,076 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Latency: 26.92 +/- 0.28 ms
+    Throughput: 152,129 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+    Latency: 51.38 +/- 0.19 ms
+    Throughput: 159,444 tokens/sec
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Latency: 116.70 +/- 3.63 ms
+    Throughput: 140,390 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Latency: 31.66 +/- 0.56 ms
+    Throughput: 129,389 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+    Latency: 60.54 +/- 1.71 ms
+    Throughput: 135,309 tokens/sec
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+Results saved to benchmark_results.json (54 total, 6 new)
+<<< [tp4_bwmm_nosp] done — Tue Mar 17 07:04:50 UTC 2026
+
+>>> [tp4_bwmm_drop] nproc=4 — Tue Mar 17 07:04:50 UTC 2026
+  ✓ Parallel state: TP=4, EP=1
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Drop rate: 73.0% (23916/32768)
+    Latency: 138.29 +/- 0.39 ms
+    Throughput: 118,471 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Drop rate: 73.2% (5994/8192)
+    Latency: 33.68 +/- 0.30 ms
+    Throughput: 121,617 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+    Drop rate: 73.0% (11957/16384)
+    Latency: 68.31 +/- 0.32 ms
+    Throughput: 119,920 tokens/sec
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Drop rate: 0.6% (212/32768)
+    Latency: 131.84 +/- 0.18 ms
+    Throughput: 124,271 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Drop rate: 0.7% (58/8192)
+    Latency: 32.18 +/- 0.19 ms
+    Throughput: 127,285 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+    Drop rate: 0.5% (83/16384)
+    Latency: 65.15 +/- 0.17 ms
+    Throughput: 125,732 tokens/sec
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+Results saved to benchmark_results.json (60 total, 6 new)
+<<< [tp4_bwmm_drop] done — Tue Mar 17 07:12:32 UTC 2026
+
+>>> [ep4_bwmm] nproc=4 — Tue Mar 17 07:12:32 UTC 2026
+  ✓ Parallel state: TP=1, EP=4
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Latency: 102.82 +/- 3.55 ms
+    Throughput: 159,352 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Latency: 25.99 +/- 0.26 ms
+    Throughput: 157,586 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+    Latency: 50.79 +/- 0.34 ms/home/ubuntu/trn2-moe/nxd_benchmark.py:589: DeprecationWarning: Use torch_xla.device instead
+    Throughput: 161,295 tokens/sec
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Latency: 116.25 +/- 2.72 ms
+    Throughput: 140,932 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Latency: 30.73 +/- 0.28 ms
+    Throughput: 133,299 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+    Latency: 60.29 +/- 0.91 ms
+    Throughput: 135,872 tokens/sec
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+Results saved to benchmark_results.json (66 total, 6 new)
+<<< [ep4_bwmm] done — Tue Mar 17 07:17:45 UTC 2026
+
+>>> [tp2_ep2_bwmm] nproc=4 — Tue Mar 17 07:17:45 UTC 2026
+  ✓ Parallel state: TP=2, EP=2
+  ✓ Loaded router weights via router.linear_router.weight: torch.Size([8, 4096])
+  ✓ Model moved to XLA device
+  ✓ MoE layer initialized successfully
+    Expert load: [16049, 16059, 186, 25, 215, 25, 173, 36]
+    Latency: 341.14 +/- 0.27 ms
+    Throughput: 48,027 tokens/sec
+    Expert load: [4022, 4020, 40, 7, 51, 1, 43, 8]
+    Latency: 90.71 +/- 0.24 ms
+    Throughput: 45,153 tokens/sec
+    Expert load: [8033, 8020, 89, 12, 114, 9, 94, 13]
+    Latency: 172.48 +/- 0.19 ms
+    Throughput: 47,494 tokens/sec
+    Expert load: [4085, 4016, 4183, 4142, 4090, 4175, 4020, 4057]
+    Latency: 339.71 +/- 0.49 ms
+    Throughput: 48,229 tokens/sec
+    Expert load: [1001, 1052, 1023, 1018, 1027, 1020, 1051, 1000]
+    Latency: 90.54 +/- 0.27 ms
+    Throughput: 45,242 tokens/sec
+    Expert load: [2081, 2000, 2029, 2037, 2076, 2061, 2057, 2043]
+    Latency: 171.64 +/- 0.28 ms
+    Throughput: 47,728 tokens/sec
+BENCHMARK SUMMARY
+Config               Distribution   SeqLen    Latency (ms)       +-       Tokens/s              Profile Status    
+Results saved to benchmark_results.json (72 total, 6 new)
+<<< [tp2_ep2_bwmm] done — Tue Mar 17 07:56:43 UTC 2026
+
+========================================
+SWEEP COMPLETE — Tue Mar 17 07:56:43 UTC 2026
+Results: benchmark_results.json
+========================================

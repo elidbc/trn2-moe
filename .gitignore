@@ -15,3 +15,5 @@ __pycache__
 # weights
 weights/compiled_model_weights/*
 weights/uncompiled_model_weights/*
+weights/input_weights/*
+weights/output_weights/*
