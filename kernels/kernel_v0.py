@@ -148,7 +148,7 @@ def moe_expert_kernel(sorted_tokens, w1_experts, w3_experts, w2_experts, expert_
                 out_acc = nl.zeros((TILE_M, TILE_N), dtype=nl.float32, buffer=nl.sbuf, name=f"out_acc_{expert}_{m}_{n}")
 
                 for k in nl.affine_range(num_kd_tiles):
-                    # load in transposed intermediate tensor (nc_transpose seems to demand 32x32 tiles)
+                    # load in transposed intermediate tensor (nc_transpose requires 32x32 tiles)
                     lhsT_tile = nl.ndarray((TILE_K, TILE_M), dtype=intermediate.dtype, buffer=nl.sbuf)
                     for i in nl.affine_range(TILE_M // 32):
                         for j in nl.affine_range(TILE_K // 32):

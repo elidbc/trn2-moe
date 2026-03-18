@@ -19,15 +19,23 @@ Usage:
 import argparse
 import math
 import os
+import sys
 import time
+from pathlib import Path
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# Ensure project root (containing `mixtral_references`) is on sys.path when
+# running this file as a script, e.g. `python kernels/harness.py ...`.
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 from kernel_v0 import moe_expert_kernel
 #from kernel_v1 import moe_expert_kernel_v1
-from kernel_v2 import moe_expert_kernel_v2
+#from kernel_v2 import moe_expert_kernel_v2
 from mixtral_references.mistral_moe import MixtralConfig, MixtralSparseMoeBlock
 
 
@@ -177,7 +185,7 @@ class NKIMoELayer(nn.Module):
                                     dtype=torch.int32,
                                     device=x.device) * max_tok)
             print(f"offsets shape: {offsets.shape}")
-            expert_out = moe_expert_kernel_v2[4](
+            expert_out = moe_expert_kernel(
                 pad_tok_T,
                 self.w1_experts, self.w3_experts, self.w2_experts,
                 offsets,

@@ -16,8 +16,6 @@ def moe_expert_kernel_v1(sorted_tokens, w1_experts, w3_experts, w2_experts, expe
     _, expert_dim = w1_experts.shape
     num_experts = expert_offsets.shape[0] - 1
     MAX_TOK_PER_EXPERT = T // num_experts
-
-
     
     # NKI GEMM: LHS^T * RHS
     TILE_M = nl.tile_size.gemm_stationary_fmax # stationary dim, (T), tile size = 128
