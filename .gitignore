@@ -25,3 +25,5 @@ weights/
 *.pb
 *.neff
 *.ntff
+
+profiles/
